@@ -14,9 +14,20 @@ struct CheckOutView: View {
     @State private var addLoyaltyDetails = false
     @State private var loyaltyNumber = ""
     @State private var tipAmount = 15
+    @State private var showingPaymentAlert = false
         
     let paymentTypes = ["Cash", "Credit Card", "iDine Points"]
     let tipAmounts = [10, 15, 20, 25, 0]
+    
+    var totalPrice: String {
+        let formater = NumberFormatter()
+        formater.numberStyle = .currency
+        
+        let total = Double(order.total)
+        let tipValue = total/100 * Double(tipAmount)
+        
+        return formater.string(from: NSNumber(value: total + tipValue)) ?? "$0"
+    }
     
     var body: some View {
         Form {
@@ -42,14 +53,17 @@ struct CheckOutView: View {
                 .pickerStyle(SegmentedPickerStyle())
             })
             
-            Section(header: Text("Total: $100").totalHeaderStyle()) {
+            Section(header: Text("Total: \(totalPrice)").totalHeaderStyle()) {
                 Button("Confirm Order") {
-                    
+                    showingPaymentAlert.toggle()
                 }
             }
         }
         .navigationTitle("Payment")
         .navigationBarTitleDisplayMode(.inline)
+        .alert(isPresented: $showingPaymentAlert) {
+            Alert(title: Text("Order Confirmed"), message: Text("Your total was: \(totalPrice)"), dismissButton: .default(Text("OK")))
+        }
     }
 }
 
